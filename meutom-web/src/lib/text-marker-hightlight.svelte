@@ -34,8 +34,8 @@
 		border-radius: 7.5px;
 		text-shadow:
 			-12px 12px 9.8px rgba(${props.markerColor.r}, ${props.markerColor.g}, ${props.markerColor.b}, 0.7),
-			21px -18.1px 7.3px rgba(255, 255, 255, 1),
-			-18.1px -27.3px 30px rgba(255, 255, 255, 1); ${props.style}`}
+			12px -12.1px 7.3px rgba(255, 255, 255, 1),
+			-12.1px -27.3px 30px rgba(255, 255, 255, 1); ${props.style}`}
 >
 	{@render props.children?.()}
 </span>
