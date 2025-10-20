@@ -1,0 +1,69 @@
+@use 'sass:color';
+
+@use '@material/theme/color-palette';
+
+// Svelte Colors!
+@use '@material/theme/index' as theme with (
+  $primary: rgb(137 74 103),
+  $surface-tint: rgb(137 74 103),
+  $on-primary: rgb(255 255 255),
+  $primary-container: rgb(255 216 230),
+  $on-primary-container: rgb(110 51 79),
+  $secondary: rgb(115 87 97),
+  $on-secondary: rgb(255 255 255),
+  $secondary-container: rgb(254 217 230),
+  $on-secondary-container: rgb(89 63 74),
+  $tertiary: rgb(126 85 56),
+  $on-tertiary: rgb(255 255 255),
+  $tertiary-container: rgb(255 220 198),
+  $on-tertiary-container: rgb(99 62 35),
+  $error: rgb(186 26 26),
+  $on-error: rgb(255 255 255),
+  $error-container: rgb(255 218 214),
+  $on-error-container: rgb(147 0 10),
+  $background: rgb(255 248 248),
+  $on-background: rgb(33 25 28),
+  $surface: rgb(255 248 248),
+  $on-surface: rgb(33 25 28),
+  $surface-variant: rgb(241 222 227),
+  $on-surface-variant: rgb(80 67 72),
+  $outline: rgb(130 115 120),
+  $outline-variant: rgb(212 194 199),
+  $shadow: rgb(0 0 0),
+  $scrim: rgb(0 0 0),
+  $inverse-surface: rgb(55 46 49),
+  $inverse-on-surface: rgb(253 237 241),
+  $inverse-primary: rgb(255 176 209),
+  $primary-fixed: rgb(255 216 230),
+  $on-primary-fixed: rgb(57 7 35),
+  $primary-fixed-dim: rgb(255 176 209),
+  $on-primary-fixed-variant: rgb(110 51 79),
+  $secondary-fixed: rgb(254 217 230),
+  $on-secondary-fixed: rgb(42 21 30),
+  $secondary-fixed-dim: rgb(225 189 202),
+  $on-secondary-fixed-variant: rgb(89 63 74),
+  $tertiary-fixed: rgb(255 220 198),
+  $on-tertiary-fixed: rgb(48 20 1),
+  $tertiary-fixed-dim: rgb(241 187 152),
+  $on-tertiary-fixed-variant: rgb(99 62 35),
+  $surface-dim: rgb(229 214 218),
+  $surface-bright: rgb(255 248 248),
+  $surface-container-lowest: rgb(255 255 255),
+  $surface-container-low: rgb(255 240 243),
+  $surface-container: rgb(250 234 238),
+  $surface-container-high: rgb(244 228 232),
+  $surface-container-highest: rgb(238 223 226)
+);
+
+html,
+body {
+  background-color: theme.$surface;
+  color: theme.$on-surface;
+}
+
+a {
+  color: #40b3ff;
+}
+a:visited {
+  color: color.scale(#40b3ff, $lightness: -35%);
+}

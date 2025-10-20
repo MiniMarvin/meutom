@@ -8,6 +8,9 @@
 		"build": "vite build",
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
+		"theme": "npm run smui-theme-light && npm run smui-theme-dark",
+		"smui-theme-light": "smui-theme compile static/smui.css -i src/theme -i ./node_modules",
+		"smui-theme-dark": "smui-theme compile static/smui-dark.css -i src/theme/dark -i ./node_modules",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"format": "prettier --write .",
@@ -26,6 +29,8 @@
 		"@eslint/compat": "^1.4.0",
 		"@eslint/js": "^9.36.0",
 		"@inlang/paraglide-js": "^2.3.2",
+		"@smui/button": "^8.0.3",
+		"@smui/card": "^8.0.3",
 		"@storybook/addon-a11y": "^9.1.13",
 		"@storybook/addon-docs": "^9.1.13",
 		"@storybook/addon-svelte-csf": "^5.0.10",
@@ -47,6 +52,7 @@
 		"playwright": "^1.55.1",
 		"prettier": "^3.6.2",
 		"prettier-plugin-svelte": "^3.4.0",
+		"smui-theme": "^8.0.3",
 		"storybook": "^9.1.13",
 		"svelte": "^5.39.5",
 		"svelte-check": "^4.3.2",
@@ -58,6 +64,7 @@
 		"vitest-browser-svelte": "^1.1.0"
 	},
 	"dependencies": {
-		"postgres": "^3.4.7"
+		"postgres": "^3.4.7",
+		"svelte-material-ui": "^8.0.3"
 	}
 }
