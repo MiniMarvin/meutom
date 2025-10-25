@@ -28,6 +28,8 @@
 		"@chromatic-com/storybook": "^4.1.1",
 		"@eslint/compat": "^1.4.0",
 		"@eslint/js": "^9.36.0",
+		"@fontsource/material-icons": "^5.2.7",
+		"@fontsource/roboto": "^5.2.8",
 		"@inlang/paraglide-js": "^2.3.2",
 		"@smui/button": "^8.0.3",
 		"@smui/card": "^8.0.3",
@@ -67,6 +69,8 @@
 		"vitest-browser-svelte": "^1.1.0"
 	},
 	"dependencies": {
+		"@huggingface/transformers": "^3.7.6",
+		"idb": "^8.0.3",
 		"postgres": "^3.4.7",
 		"siema": "^1.5.1",
 		"svelte-material-ui": "^8.0.3"

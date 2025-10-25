@@ -8,6 +8,11 @@ export default defineConfig({
 	optimizeDeps: {
 		include: ['lodash.get', 'lodash.isequal', 'lodash.clonedeep']
 	},
+	server: {
+		fs: {
+			allow: [process.cwd()]
+		}
+	},
 	plugins: [
 		enhancedImages(),
 		sveltekit(),
@@ -15,7 +20,14 @@ export default defineConfig({
 		paraglideVitePlugin({
 			project: './project.inlang',
 			outdir: './src/lib/paraglide'
-		})
+		}),
+		{
+			name: 'config',
+			enforce: 'post',
+			config(config) {
+				config.server!.fs!.allow = [process.cwd()];
+			}
+		}
 	],
 	test: {
 		expect: { requireAssertions: true },
