@@ -14,8 +14,8 @@
 	></enhanced:img>
 	<div class="center">
 		<div class="centered">
-			<h1>Digitalize seu guarda roupas!</h1>
-			<h3>
+			<h1 class="title">Digitalize seu guarda roupas!</h1>
+			<h3 class="subtitle">
 				Monte looks com as peças que você tem e encontre roupas de brechós com facilidade, <TextMarkerHightlight
 					markerColor={{ r: 255, g: 176, b: 209 }}
 				>
@@ -25,19 +25,42 @@
 		</div>
 	</div>
 </section>
+<section class="showcase">
+	<div class="center">
+		<div class="centered">
+			<div class="split-screen">
+				<div class="split-left">
+					<h1>E como isso funciona?</h1>
+					<p>
+						Primeiro você <TextMarkerHightlight markerColor={{ r: 255, g: 176, b: 209 }}>
+							digitaliza suas roupas
+						</TextMarkerHightlight>, com uma foto mesmo, e adiciona as informações sobre ela como.
+						Vamos precisar saber se é uma calça, uma camisa, sapato ou acessório. Depois que tudo
+						estiver digitalizado certinho, você consegue <TextMarkerHightlight
+							markerColor={{ r: 255, g: 176, b: 209 }}
+						>
+							montar os looks com um seletor digital
+						</TextMarkerHightlight> super simples! Mas pra que falar muito? Testa aí!
+					</p>
+				</div>
+				<div class="split-right"></div>
+			</div>
+		</div>
+	</div>
+</section>
 
 <style>
-	h1,
-	h3 {
+	.title,
+	.subtitle {
 		color: white;
 	}
 
-	h1 {
+	.title {
 		font-size: calc(max(4vw, 36px));
 		text-align: center;
 	}
 
-	h3 {
+	.subtitle {
 		padding: 0px 0px;
 		margin: 14px 0px;
 		text-align: center;
@@ -68,10 +91,36 @@
 	}
 
 	.head {
-		/* max-height: 50vh; */
 		overflow: hidden;
 		position: relative;
 		background-color: #333;
 		z-index: -2;
+		padding: 0px;
+	}
+
+	section {
+		padding: 12px;
+	}
+
+	.split-screen {
+		display: flex;
+		flex-direction: row;
+	}
+
+	.split-left {
+		max-width: 320px;
+	}
+
+	.split-right {
+		width: 100%;
+	}
+
+	@media (max-width: 800px) {
+		.split-left {
+			width: 100%;
+		}
+		.split-screen {
+			flex-direction: column;
+		}
 	}
 </style>
