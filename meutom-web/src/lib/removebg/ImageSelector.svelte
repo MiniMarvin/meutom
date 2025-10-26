@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import { addImage, getImagesByComponentId, updateImage, type ImageRecord } from './db';
-	import { processImage } from './process';
+	import { FALLBACK_MODEL_ID, processImage, initializeModel } from './process';
 	import { isMobileDevice } from './utils';
 	import Camera from './Camera.svelte';
 	import Button from '@smui/button';
@@ -14,12 +14,13 @@
 		isProcessed: boolean;
 	};
 
-	let { id: componentId }: { id: string } = $props();
+	let { id: componentId, style }: { id: string; style?: string } = $props();
 
 	let images = $state<ManagedImage[]>([]);
 	let isDragging = $state(false);
 	let showCamera = $state(false);
 	let fileInput: HTMLInputElement;
+	let modelInitPromise: Promise<boolean> | undefined = undefined;
 
 	const isMobile = $derived(isMobileDevice());
 
@@ -61,7 +62,13 @@
 	});
 
 	async function handleImageProcessing(record: ImageRecord) {
+		if (modelInitPromise === undefined) {
+			modelInitPromise = initializeModel(FALLBACK_MODEL_ID);
+		}
 		try {
+			await modelInitPromise;
+
+			// Process the image
 			const processedFile = await processImage(record.originalImage);
 
 			// Update the record in IndexedDB
@@ -95,6 +102,9 @@
 				images[imageIndex].isProcessing = false; // Stop loading state
 			}
 		}
+
+		// Force reload
+		images = images;
 	}
 
 	async function addFiles(files: FileList | null) {
@@ -161,10 +171,11 @@
 	}}
 	ondragleave={() => (isDragging = false)}
 	ondrop={onDrop}
+	{style}
 >
 	<div class="image-container">
 		{#if images.length === 0}
-			<p class="placeholder">Drop images here or click "Enviar Imagem"</p>
+			<p class="placeholder">Arraste as imagens para cá ou clique "Enviar Imagem"</p>
 		{/if}
 		{#each images as image (image.id)}
 			<div class="image-wrapper">

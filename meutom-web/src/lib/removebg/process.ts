@@ -9,8 +9,8 @@ import {
 } from '@huggingface/transformers';
 
 // Initialize different model configurations
-const WEBGPU_MODEL_ID = 'Xenova/modnet';
-const FALLBACK_MODEL_ID = 'briaai/RMBG-1.4';
+export const WEBGPU_MODEL_ID = 'Xenova/modnet'; // Makes the computer freeze
+export const FALLBACK_MODEL_ID = 'briaai/RMBG-1.4';
 
 interface ModelState {
 	model: PreTrainedModel | null;
@@ -46,6 +46,7 @@ const state: ModelState = {
 
 // Initialize WebGPU with proper error handling
 async function initializeWebGPU() {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const gpu = (navigator as any).gpu;
 	if (!gpu) {
 		return false;
@@ -150,9 +151,9 @@ export async function initializeModel(forceModelId?: string): Promise<boolean> {
 				do_pad: true,
 				do_rescale: true,
 				do_resize: true,
-				image_mean: [0.5, 0.5, 0.5],
+				image_mean: [0.2, 0.2, 0.2],
 				feature_extractor_type: 'ImageFeatureExtractor',
-				image_std: [0.5, 0.5, 0.5],
+				image_std: [0.2, 0.2, 0.2],
 				resample: 2,
 				rescale_factor: 0.00392156862745098,
 				size: { width: 1024, height: 1024 }
