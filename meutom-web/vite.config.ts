@@ -20,6 +20,9 @@ export default defineConfig({
 			}
 		}
 	},
+	worker: {
+		format: 'es'
+	},
 	plugins: [
 		enhancedImages(),
 		sveltekit(),

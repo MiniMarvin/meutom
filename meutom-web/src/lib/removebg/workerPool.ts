@@ -27,7 +27,7 @@ function processQueue() {
 	if (!record) return;
 
 	const worker = new Worker(new URL('./process.worker.ts', import.meta.url), {
-		type: 'module'
+		type: 'module' // Define o tipo como 'module' para evitar o erro com 'iife'
 	});
 	activeWorkers.push(worker);
 
