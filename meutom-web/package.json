@@ -33,6 +33,8 @@
 		"@inlang/paraglide-js": "^2.3.2",
 		"@smui/button": "^8.0.3",
 		"@smui/card": "^8.0.3",
+		"@smui/select": "^8.0.3",
+		"@smui/textfield": "^8.0.3",
 		"@storybook/addon-a11y": "^9.1.13",
 		"@storybook/addon-docs": "^9.1.13",
 		"@storybook/addon-svelte-csf": "^5.0.10",

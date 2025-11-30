@@ -1,17 +1,30 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
-	import { addImage, getImagesByComponentId, updateImage, type ImageRecord } from './db';
-	import { FALLBACK_MODEL_ID, processImage, initializeModel } from './process';
+	import {
+		addImage,
+		deleteImage,
+		getImagesByComponentId,
+		updateImage,
+		type ImageRecord
+	} from './db';
+	import { applyMask } from './process';
+	import { workerPool } from './workerPool';
 	import { isMobileDevice } from './utils';
 	import Camera from './Camera.svelte';
 	import Button from '@smui/button';
+	import Select, { Option } from '@smui/select';
+	import Textfield from '@smui/textfield';
+	import { WearType, type WearableInfo } from 'src/lib/wearable/types';
+	import FullscreenImage from './FullscreenImage.svelte';
 
 	// Local state for each image managed by the component
 	type ManagedImage = {
 		id: string;
 		objectUrl: string;
+		originalObjectUrl: string;
 		isProcessing: boolean;
 		isProcessed: boolean;
+		wearableInfo: WearableInfo;
 	};
 
 	let { id: componentId, style }: { id: string; style?: string } = $props();
@@ -19,14 +32,60 @@
 	let images = $state<ManagedImage[]>([]);
 	let isDragging = $state(false);
 	let showCamera = $state(false);
+	let expandedImage = $state<ManagedImage | null>(null);
 	let fileInput: HTMLInputElement;
-	let modelInitPromise: Promise<boolean> | undefined = undefined;
 
 	const isMobile = $derived(isMobileDevice());
+	const wearTypeOptions = $derived(Object.values(WearType));
 
 	// Effect to load persisted images from IndexedDB on component mount
 	$effect(() => {
 		if (!browser) return;
+
+		const handleProcessingResult = async ({
+			recordId,
+			processedFile,
+			error
+		}: {
+			recordId: string;
+			processedFile?: File;
+			error?: string;
+		}) => {
+			const imageIndex = images.findIndex((img) => img.id === recordId);
+			if (imageIndex === -1) return;
+
+			if (error) {
+				console.error(`Processing failed for ${recordId}:`, error);
+				images[imageIndex].isProcessing = false;
+				images = [...images];
+				return;
+			}
+
+			if (processedFile) {
+				const originalRecord = (await getImagesByComponentId(componentId)).find(
+					(r) => r.id === recordId
+				);
+
+				if (originalRecord) {
+					const updatedRecord: ImageRecord = {
+						...originalRecord,
+						processedImage: processedFile,
+						isProcessed: true
+					};
+					await updateImage(updatedRecord);
+
+					const newObjectUrl = URL.createObjectURL(processedFile);
+					URL.revokeObjectURL(images[imageIndex].objectUrl);
+
+					images[imageIndex].objectUrl = newObjectUrl;
+					images[imageIndex].isProcessing = false;
+					images[imageIndex].isProcessed = true;
+					images = [...images];
+				}
+			}
+		};
+
+		const unsubscribe = workerPool.subscribe(handleProcessingResult);
 
 		async function loadInitialImages() {
 			const storedRecords = await getImagesByComponentId(componentId);
@@ -35,17 +94,20 @@
 			for (const record of storedRecords) {
 				const imageFile = record.isProcessed ? record.processedImage! : record.originalImage;
 				const objectUrl = URL.createObjectURL(imageFile);
+				const originalObjectUrl = URL.createObjectURL(record.originalImage);
 
 				managedImages.push({
 					id: record.id,
 					objectUrl,
+					originalObjectUrl,
 					isProcessing: !record.isProcessed,
-					isProcessed: record.isProcessed
+					isProcessed: record.isProcessed,
+					wearableInfo: record.wearableInfo ?? {}
 				});
 
 				// If an image wasn't fully processed, restart the process
 				if (!record.isProcessed) {
-					handleImageProcessing(record);
+					workerPool.addJob(record);
 				}
 			}
 			images = managedImages;
@@ -53,59 +115,14 @@
 
 		loadInitialImages();
 
-		// Cleanup object URLs when the component is destroyed
 		return () => {
+			unsubscribe();
 			for (const img of images) {
 				URL.revokeObjectURL(img.objectUrl);
+				URL.revokeObjectURL(img.originalObjectUrl);
 			}
 		};
 	});
-
-	async function handleImageProcessing(record: ImageRecord) {
-		if (modelInitPromise === undefined) {
-			modelInitPromise = initializeModel(FALLBACK_MODEL_ID);
-		}
-		try {
-			await modelInitPromise;
-
-			// Process the image
-			const processedFile = await processImage(record.originalImage);
-
-			// Update the record in IndexedDB
-			const updatedRecord: ImageRecord = {
-				...record,
-				processedImage: processedFile,
-				isProcessed: true
-			};
-			await updateImage(updatedRecord);
-
-			// Update the UI state
-			const imageIndex = images.findIndex((img) => img.id === record.id);
-			if (imageIndex > -1) {
-				// Create a new object URL for the processed image
-				const newObjectUrl = URL.createObjectURL(processedFile);
-				// Revoke the old one to free memory
-				URL.revokeObjectURL(images[imageIndex].objectUrl);
-
-				images[imageIndex] = {
-					...images[imageIndex],
-					objectUrl: newObjectUrl,
-					isProcessing: false,
-					isProcessed: true
-				};
-			}
-		} catch (error) {
-			console.error('Failed to process image:', error);
-			// Optionally update UI to show an error state for this image
-			const imageIndex = images.findIndex((img) => img.id === record.id);
-			if (imageIndex > -1) {
-				images[imageIndex].isProcessing = false; // Stop loading state
-			}
-		}
-
-		// Force reload
-		images = images;
-	}
 
 	async function addFiles(files: FileList | null) {
 		if (!files) return;
@@ -115,14 +132,16 @@
 
 			const timestamp = Date.now();
 			const recordId = `${componentId}-${timestamp}`;
-			const objectUrl = URL.createObjectURL(file);
+			const objectUrl = URL.createObjectURL(file); // This will be the original for a while
 
 			// Add to UI immediately in loading state
 			images.push({
 				id: recordId,
 				objectUrl,
+				originalObjectUrl: objectUrl,
 				isProcessing: true,
-				isProcessed: false
+				isProcessed: false,
+				wearableInfo: {}
 			});
 
 			// Create record for DB
@@ -131,14 +150,42 @@
 				componentId,
 				originalImage: file,
 				isProcessed: false,
-				timestamp
+				timestamp,
+				wearableInfo: {}
 			};
 
 			// Save to DB before processing
 			await addImage(record);
 
-			// Start processing
-			handleImageProcessing(record);
+			// Add job to the global pool
+			workerPool.addJob(record);
+		}
+		images = [...images];
+	}
+
+	async function handleInfoChange(imageId: string, newInfo: WearableInfo) {
+		const imageIndex = images.findIndex((img) => img.id === imageId);
+		if (imageIndex > -1) {
+			images[imageIndex].wearableInfo = newInfo;
+			const record = await (
+				await getImagesByComponentId(componentId)
+			).find((r) => r.id === imageId);
+			if (record) {
+				await updateImage({ ...record, wearableInfo: newInfo });
+			}
+		}
+	}
+
+	async function handleRemoveImage(imageId: string) {
+		const imageIndex = images.findIndex((img) => img.id === imageId);
+		if (imageIndex > -1) {
+			const img = images[imageIndex];
+			URL.revokeObjectURL(img.objectUrl);
+			URL.revokeObjectURL(img.originalObjectUrl);
+			images.splice(imageIndex, 1);
+			images = [...images];
+			await deleteImage(imageId);
+			expandedImage = null;
 		}
 	}
 
@@ -179,7 +226,48 @@
 		{/if}
 		{#each images as image (image.id)}
 			<div class="image-wrapper">
-				<img src={image.objectUrl} alt="Selected" class:loading={image.isProcessing} />
+				<!-- svelte-ignore a11y_click_events_have_key_events -->
+				<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+				<img
+					src={image.objectUrl}
+					alt="Selected"
+					class:loading={image.isProcessing}
+					onclick={() => (expandedImage = image)}
+				/>
+				<!-- <div class="input-form">
+					<Select
+						variant="outlined"
+						label="Tipo"
+						value={image.wearableInfo.type}
+						onchange={(e) =>
+							handleInfoChange(image.id, {
+								...image.wearableInfo,
+								type: e.detail.value || WearType.Camisa
+							})}
+					>
+						{#each wearTypeOptions as type}
+							<Option value={type}>{type}</Option>
+						{/each}
+					</Select>
+					<Textfield
+						variant="outlined"
+						label="Marca"
+						value={image.wearableInfo.brand || ''}
+						oninput={(e) =>
+							handleInfoChange(image.id, { ...image.wearableInfo, brand: e.currentTarget.value })}
+					/>
+					<Textfield
+						variant="outlined"
+						label="Preço de Venda"
+						type="number"
+						value={image.wearableInfo.sellPrice || 0}
+						oninput={(e) =>
+							handleInfoChange(image.id, {
+								...image.wearableInfo,
+								sellPrice: +e.currentTarget.value
+							})}
+					/>
+				</div> -->
 			</div>
 		{/each}
 	</div>
@@ -219,7 +307,7 @@
 	.image-container {
 		flex-grow: 1;
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+		grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
 		gap: 1rem;
 	}
 	.placeholder {
@@ -231,17 +319,29 @@
 	}
 	.image-wrapper {
 		position: relative;
-		aspect-ratio: 1 / 1;
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
 	}
 	.image-wrapper img {
 		width: 100%;
-		height: 100%;
+		aspect-ratio: 1 / 1;
 		object-fit: cover;
 		border-radius: 4px;
 		transition: filter 0.3s ease-in-out;
+		cursor: pointer;
 	}
 	.image-wrapper img.loading {
 		filter: grayscale(100%) blur(5px);
+	}
+	.input-form {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+	.input-form > :global(.smui-select),
+	:global(.smui-textfield) {
+		width: 100%;
 	}
 	.input {
 		display: flex;

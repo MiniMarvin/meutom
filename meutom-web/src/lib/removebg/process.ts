@@ -1,12 +1,5 @@
 // Reference: https://github.com/addyosmani/bg-remove/blob/main/lib/process.ts
-import {
-	env,
-	AutoModel,
-	AutoProcessor,
-	RawImage,
-	PreTrainedModel,
-	Processor
-} from '@huggingface/transformers';
+import type { PreTrainedModel, Processor, RawImage } from '@huggingface/transformers';
 
 // Initialize different model configurations
 export const WEBGPU_MODEL_ID = 'Xenova/modnet'; // Makes the computer freeze
@@ -28,11 +21,15 @@ interface ModelInfo {
 
 // iOS detection
 const isIOS = () => {
+	if (typeof navigator === 'undefined') return false;
 	return (
 		['iPad Simulator', 'iPhone Simulator', 'iPod Simulator', 'iPad', 'iPhone', 'iPod'].includes(
 			navigator.platform
 		) ||
-		(navigator.userAgent.includes('Mac') && 'ontouchend' in document)
+		// @ts-expect-error
+		(navigator.userAgent.includes('Mac') &&
+			typeof document !== 'undefined' &&
+			'ontouchend' in document)
 	);
 };
 
@@ -41,12 +38,13 @@ const state: ModelState = {
 	processor: null,
 	isWebGPUSupported: false,
 	currentModelId: FALLBACK_MODEL_ID,
-	isIOS: isIOS()
+	isIOS: false // Will be determined during initialization
 };
 
 // Initialize WebGPU with proper error handling
 async function initializeWebGPU() {
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const { env, AutoModel, AutoProcessor } = await import('@huggingface/transformers');
+
 	const gpu = (navigator as any).gpu;
 	if (!gpu) {
 		return false;
@@ -87,6 +85,10 @@ async function initializeWebGPU() {
 
 // Initialize the model based on the selected model ID
 export async function initializeModel(forceModelId?: string): Promise<boolean> {
+	const { env, AutoModel, AutoProcessor } = await import('@huggingface/transformers');
+
+	state.isIOS = isIOS();
+
 	try {
 		// Always use RMBG-1.4 for iOS
 		if (state.isIOS) {
@@ -140,7 +142,7 @@ export async function initializeModel(forceModelId?: string): Promise<boolean> {
 
 		state.model = await AutoModel.from_pretrained(FALLBACK_MODEL_ID, {
 			progress_callback: (progress) => {
-				console.log(`Loading model: ${Math.round(progress * 100)}%`);
+				// console.log(`Loading model: ${Math.round(progress * 100)}%`);
 			}
 		});
 
@@ -189,57 +191,72 @@ export function getModelInfo(): ModelInfo {
 	};
 }
 
-export async function processImage(image: File): Promise<File> {
+/**
+ * Runs the model prediction in a worker to generate an alpha mask.
+ * This function is designed to be run in a Web Worker context.
+ */
+export async function predictMask(
+	image: File
+): Promise<{ maskData: Uint8ClampedArray; width: number; height: number }> {
+	const { RawImage } = await import('@huggingface/transformers');
+
 	if (!state.model || !state.processor) {
 		throw new Error('Model not initialized. Call initializeModel() first.');
 	}
 
 	const img = await RawImage.fromURL(URL.createObjectURL(image));
 
-	try {
-		// Pre-process image
-		const { pixel_values } = await state.processor(img);
+	// Pre-process image
+	const { pixel_values } = await state.processor(img);
 
-		// Predict alpha matte
-		const { output } = await state.model({ input: pixel_values });
+	// Predict alpha matte
+	const { output } = await state.model({ input: pixel_values });
 
-		// Resize mask back to original size
-		const maskData = (
-			await RawImage.fromTensor(output[0].mul(255).to('uint8')).resize(img.width, img.height)
-		).data;
+	// Resize mask back to original size
+	const mask = await RawImage.fromTensor(output[0].mul(255).to('uint8')).resize(
+		img.width,
+		img.height
+	);
 
-		// Create new canvas
-		const canvas = document.createElement('canvas');
-		canvas.width = img.width;
-		canvas.height = img.height;
-		const ctx = canvas.getContext('2d');
-		if (!ctx) throw new Error('Could not get 2d context');
+	return { maskData: mask.data, width: img.width, height: img.height };
+}
 
-		// Draw original image output to canvas
-		ctx.drawImage(img.toCanvas(), 0, 0);
+/**
+ * Applies the alpha mask to the original image on the main thread using a canvas.
+ * This function requires a DOM environment.
+ */
+export async function applyMask(
+	originalImage: File,
+	maskData: Uint8ClampedArray,
+	width: number,
+	height: number
+): Promise<File> {
+	const { RawImage } = await import('@huggingface/transformers');
 
-		// Update alpha channel
-		const pixelData = ctx.getImageData(0, 0, img.width, img.height);
-		for (let i = 0; i < maskData.length; ++i) {
-			pixelData.data[4 * i + 3] = maskData[i];
-		}
-		ctx.putImageData(pixelData, 0, 0);
+	const canvas = document.createElement('canvas');
+	canvas.width = width;
+	canvas.height = height;
+	const ctx = canvas.getContext('2d');
+	if (!ctx) throw new Error('Could not get 2d context');
 
-		// Convert canvas to blob
-		const blob = await new Promise<Blob>((resolve, reject) =>
-			canvas.toBlob(
-				(blob) => (blob ? resolve(blob) : reject(new Error('Failed to create blob'))),
-				'image/png'
-			)
-		);
+	// Draw original image to canvas
+	const img = await RawImage.fromURL(URL.createObjectURL(originalImage));
+	ctx.drawImage(img.toCanvas(), 0, 0);
 
-		const [fileName] = image.name.split('.');
-		const processedFile = new File([blob], `${fileName}-bg-blasted.png`, { type: 'image/png' });
-		return processedFile;
-	} catch (error) {
-		console.error('Error processing image:', error);
-		throw new Error('Failed to process image');
+	// Update alpha channel
+	const pixelData = ctx.getImageData(0, 0, width, height);
+	for (let i = 0; i < maskData.length; ++i) {
+		pixelData.data[4 * i + 3] = maskData[i];
 	}
+	ctx.putImageData(pixelData, 0, 0);
+
+	// Convert canvas to blob
+	const blob = await new Promise<Blob>(
+		(resolve) => canvas.toBlob(resolve, 'image/png') || new Error('Failed to create blob')
+	);
+
+	const [fileName] = originalImage.name.split('.');
+	return new File([blob], `${fileName}-bg-blasted.png`, { type: 'image/png' });
 }
 
 export async function processImages(images: File[]): Promise<File[]> {
@@ -248,7 +265,10 @@ export async function processImages(images: File[]): Promise<File[]> {
 
 	for (const image of images) {
 		try {
-			const processedFile = await processImage(image);
+			// This is now a two-step process
+			const { maskData, width, height } = await predictMask(image);
+			const processedFile = await applyMask(image, maskData, width, height);
+
 			processedFiles.push(processedFile);
 			console.log('Successfully processed image', image.name);
 		} catch (error) {

@@ -1,13 +1,15 @@
 import { openDB, type DBSchema } from 'idb';
+import type { WearableInfo } from '../wearable/types';
 
-export interface ImageRecord {
-	id: string; // compound key: `${componentId}-${timestamp}`
+export type ImageRecord = {
+	id: string;
 	componentId: string;
 	originalImage: File;
 	processedImage?: File;
 	isProcessed: boolean;
 	timestamp: number;
-}
+	wearableInfo?: WearableInfo;
+};
 
 interface MyDB extends DBSchema {
 	images: {
@@ -34,7 +36,7 @@ async function getDb() {
 
 export async function addImage(record: ImageRecord) {
 	const db = await getDb();
-	await db.put(STORE_NAME, record);
+	await db.add(STORE_NAME, record);
 }
 
 export async function updateImage(record: ImageRecord) {
@@ -45,4 +47,9 @@ export async function updateImage(record: ImageRecord) {
 export async function getImagesByComponentId(componentId: string): Promise<ImageRecord[]> {
 	const db = await getDb();
 	return await db.getAllFromIndex(STORE_NAME, 'by-componentId', componentId);
+}
+
+export async function deleteImage(imageId: string) {
+	const db = await getDb();
+	return await db.delete(STORE_NAME, imageId);
 }
