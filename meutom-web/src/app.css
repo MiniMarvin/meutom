@@ -1,0 +1,46 @@
+:root {
+	--background-main: #f9f8f2;
+	--primary-deep-purple: #4a154b;
+	--action-mint-green: #a2e4b8;
+	--secondary-coffee-brown: #8c6239;
+	--accent-lilac: #d1c4e9;
+	--accent-sand: #efebe9;
+	--text-light: #ffffff;
+	--text-dark: #333333;
+
+	/* SMUI component colors */
+	--mdc-theme-primary: var(--primary-deep-purple);
+	--mdc-theme-on-primary: var(--text-light);
+	--mdc-theme-secondary: var(--action-mint-green);
+	--mdc-theme-on-secondary: var(--text-dark);
+	--mdc-theme-background: var(--background-main);
+	--mdc-theme-surface: var(--background-main);
+	--mdc-theme-on-surface: var(--text-dark);
+	--mdc-theme-error: #b00020;
+	--mdc-theme-on-error: #ffffff;
+}
+
+html[data-theme='dark'] {
+	--background-main: #333333;
+	--primary-deep-purple: #d6b2ef;
+	--action-mint-green: #1e5c4c;
+	--secondary-coffee-brown: #8c6239;
+	--accent-lilac: #3e1c45;
+	--accent-sand: #424242;
+	--text-light: #333333;
+	--text-dark: #f8f8e7;
+
+	/* SMUI component colors */
+	--mdc-theme-primary: var(--primary-deep-purple);
+	--mdc-theme-on-primary: var(--text-light);
+	--mdc-theme-secondary: var(--action-mint-green);
+	--mdc-theme-on-secondary: var(--text-dark);
+	--mdc-theme-background: var(--background-main);
+	--mdc-theme-surface: var(--background-main);
+	--mdc-theme-on-surface: var(--text-dark);
+}
+
+/* Let's be rational :) */
+* {
+	box-sizing: border-box;
+}

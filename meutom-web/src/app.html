@@ -28,12 +28,25 @@
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
 	<!-- Material Icons fonts -->
 	<link href="https://fonts.googleapis.com/css2?family=Material+Icons&display=swap" rel="stylesheet" />
 
 	<!-- SMUI Styles -->
 	<link rel="stylesheet" href="/smui.css" media="(prefers-color-scheme: light)" />
 	<link rel="stylesheet" href="/smui-dark.css" media="screen and (prefers-color-scheme: dark)" />
+
+	<script>
+		(function () {
+			const theme = localStorage.getItem('theme')
+			if (theme) {
+				document.documentElement.setAttribute('data-theme', theme)
+			} else {
+				const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+				document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light')
+			}
+		})();
+	</script>
 
 	%sveltekit.head%
 </head>
