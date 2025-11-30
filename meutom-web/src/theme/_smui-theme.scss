@@ -1,69 +1,191 @@
-@use 'sass:color';
-
-@use '@material/theme/color-palette';
-
 // Svelte Colors!
+// We are configuring the Material 2 theme, which accepts a smaller set of variables.
+// The full M3 palette is being used via @smui/theme.
 @use '@material/theme/index' as theme with (
-  $primary: rgb(137 74 103),
-  $surface-tint: rgb(137 74 103),
-  $on-primary: rgb(255 255 255),
-  $primary-container: rgb(255 216 230),
-  $on-primary-container: rgb(110 51 79),
-  $secondary: rgb(115 87 97),
-  $on-secondary: rgb(255 255 255),
-  $secondary-container: rgb(254 217 230),
-  $on-secondary-container: rgb(89 63 74),
-  $tertiary: rgb(126 85 56),
-  $on-tertiary: rgb(255 255 255),
-  $tertiary-container: rgb(255 220 198),
-  $on-tertiary-container: rgb(99 62 35),
-  $error: rgb(186 26 26),
-  $on-error: rgb(255 255 255),
-  $error-container: rgb(255 218 214),
-  $on-error-container: rgb(147 0 10),
-  $background: rgb(255 248 248),
-  $on-background: rgb(33 25 28),
-  $surface: rgb(255 248 248),
-  $on-surface: rgb(33 25 28),
-  $surface-variant: rgb(241 222 227),
-  $on-surface-variant: rgb(80 67 72),
-  $outline: rgb(130 115 120),
-  $outline-variant: rgb(212 194 199),
-  $shadow: rgb(0 0 0),
-  $scrim: rgb(0 0 0),
-  $inverse-surface: rgb(55 46 49),
-  $inverse-on-surface: rgb(253 237 241),
-  $inverse-primary: rgb(255 176 209),
-  $primary-fixed: rgb(255 216 230),
-  $on-primary-fixed: rgb(57 7 35),
-  $primary-fixed-dim: rgb(255 176 209),
-  $on-primary-fixed-variant: rgb(110 51 79),
-  $secondary-fixed: rgb(254 217 230),
-  $on-secondary-fixed: rgb(42 21 30),
-  $secondary-fixed-dim: rgb(225 189 202),
-  $on-secondary-fixed-variant: rgb(89 63 74),
-  $tertiary-fixed: rgb(255 220 198),
-  $on-tertiary-fixed: rgb(48 20 1),
-  $tertiary-fixed-dim: rgb(241 187 152),
-  $on-tertiary-fixed-variant: rgb(99 62 35),
-  $surface-dim: rgb(229 214 218),
-  $surface-bright: rgb(255 248 248),
-  $surface-container-lowest: rgb(255 255 255),
-  $surface-container-low: rgb(255 240 243),
-  $surface-container: rgb(250 234 238),
-  $surface-container-high: rgb(244 228 232),
-  $surface-container-highest: rgb(238 223 226)
+  // Generated from https://m3.material.io/theme-builder
+  // Primary: #4A154B, Secondary: #A2E4B8, Tertiary: #8C6239
+  // BG: #F8F8E7, Text: #333333, Error: #B00020
+  $primary: #4a154b,
+  $on-primary: rgb(255, 255, 255),
+  $secondary: #a2e4b8,
+  $on-secondary: rgb(0, 0, 0),
+  $error: #b00020,
+  $on-error: rgb(255, 255, 255),
+  $background: #f8f8e7,
+  $surface: #f8f8e7,
+  $on-surface: #333333
 );
+
+// Defining shape and typography based on Material documentation.
+@use '@material/shape/index' as shape with (
+  $small-component-radius: 8px,
+  $medium-component-radius: 12px,
+  $large-component-radius: 24px
+);
+
+@use '@material/typography/index' as typography with (
+  $font-family: 'Quicksand',
+  $styles-headline1: (
+    font-size: 6rem,
+    line-height: 6rem,
+    font-weight: 300,
+    letter-spacing: -0.015625em,
+    text-decoration: inherit,
+    text-transform: inherit,
+  ),
+  $styles-headline2: (
+    font-size: 3.75rem,
+    line-height: 3.75rem,
+    font-weight: 300,
+    letter-spacing: -0.0083333333em,
+    text-decoration: inherit,
+    text-transform: inherit,
+  ),
+  $styles-body1: (
+    font-size: 1rem,
+    line-height: 1.5rem,
+    font-weight: 400,
+    letter-spacing: 0.03125em,
+    text-decoration: inherit,
+    text-transform: inherit,
+  )
+);
+
+@use 'sass:color';
+@use '@material/theme/color-palette';
+@use 'sass:math';
+
+// -------------------------------------------------------------------
+// 1. SHAPE CONFIGURATION (Crucial for the Image Look)
+// -------------------------------------------------------------------
+
+// The image uses "Pill" shapes for almost everything.
+// 999px ensures the ends are always perfectly round regardless of height.
+$pill-shape: 999px;
+$card-radius: 24px; // For the larger containers/surfaces
+
+// -------------------------------------------------------------------
+// 2. COMPONENT CONFIGURATION
+// -------------------------------------------------------------------
+
+// BUTTONS
+// The image shows buttons are fully rounded (Primary and Secondary)
+// @use '@material/button' with (
+//   $shape-radius: $pill-shape,
+//   $minimum-height: 48px, // The buttons in the image look taller than standard 36px
+//   $container-height: 48px
+// );
+
+@use '@material/button/mixins' as mdc-button;
+@use '@material/fab/mixins' as mdc-fab;
+// @use '@material/chips/mixins' as mdc-chips;
+@use '@material/card/mixins' as mdc-card;
+
+.pill-button {
+  @include mdc-button.shape-radius(100%);
+  @include mdc-button.height(48px);
+}
+
+.pill-fab {
+  @include mdc-fab.shape-radius(50%);
+}
+
+// .pill-chips {
+//   @include mdc-chips.shape-radius(100%);
+//   @include mdc-chips.height(32px);
+// }
+
+.pill-card {
+  @include mdc-card.shape-radius($card-radius);
+}
+
+// -------------------------------------------------------------------
+// 3. SWITCH (TOGGLE) CUSTOMIZATION
+// -------------------------------------------------------------------
+// The switches in your image are "iOS style" (thick track, thumb inside).
+// Standard Material switches are thin tracks. We need aggressive overrides here.
+
+// @use '@material/switch' with (
+//   // To get the "chunky" look, the track must be solid, not transparent.
+//   // Standard Material defaults to ~0.5 opacity.
+//   $selected-track-opacity: 1,
+//   $unselected-track-opacity: 1
+// );
+// -------------------------------------------------------------------
+// 5. CSS OVERRIDES (For shapes variables can't reach)
+// -------------------------------------------------------------------
+
+// Customizing the Switch to match the "Chunky" look in the image
+.mdc-switch {
+  // Make the switch larger
+  --mdc-switch-track-height: 32px;
+  --mdc-switch-track-width: 52px;
+  
+  // Custom Thumb positioning to fit inside the thick track
+  .mdc-switch__track {
+    height: 32px;
+    width: 52px;
+    border-radius: 999px; // Fully rounded track
+    opacity: 1; // Make track solid (Material usually makes it transparent)
+  }
+
+  .mdc-switch__handle-track {
+    width: 52px; // Match track width
+  }
+
+  .mdc-switch__handle {
+    // Center the thumb vertically
+    top: 4px; 
+    left: 4px;
+    width: 24px;
+    height: 24px;
+  }
+  
+  // When checked, move the thumb to the right
+  &.mdc-switch--selected .mdc-switch__handle {
+    transform: translateX(20px) !important; // Adjust based on width
+  }
+}
+
+// Navigation Bar Active Indicator Shape
+// The image shows a rounded rectangle for the active nav item
+.smui-bottom-navigation__button--active .smui-bottom-navigation__button__icon {
+    background-color: rgba(255, 255, 255, 0.1); // Use your surface color var here
+    border-radius: 16px;
+    padding: 4px 16px;
+    width: auto;
+}
+
 
 html,
 body {
+  font-family: 'Quicksand', sans-serif;
   background-color: theme.$surface;
   color: theme.$on-surface;
 }
 
+p,h1,h2,h3,h4,h5,h6,span {
+  font-family: 'Quicksand', sans-serif;
+}
+
 a {
-  color: #40b3ff;
+  color: theme.$primary;
 }
 a:visited {
-  color: color.scale(#40b3ff, $lightness: -35%);
+  color: color.scale(theme.$primary, $lightness: -35%);
+}
+
+/* Mobile */
+* {
+  font-family: sans-serif;
+  box-sizing: border-box;
+  line-height: 150%;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0px;
+  scrollbar-width: thin;
 }

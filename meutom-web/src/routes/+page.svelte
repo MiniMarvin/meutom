@@ -1,6 +1,7 @@
 <script>
 	import TextMarkerHightlight from 'src/lib/text-marker-hightlight.svelte';
 	import background from '$lib/assets/background.png?enhanced';
+	import backgroundbad from '$lib/assets/background.png';
 
 	TextMarkerHightlight;
 </script>
@@ -13,7 +14,7 @@
 		class="top"
 	></enhanced:img>
 	<div class="center">
-		<div class="centered">
+		<div class="centered lifted">
 			<h1 class="title">Digitalize seu guarda roupas!</h1>
 			<h3 class="subtitle">
 				Monte looks com as peças que você tem e encontre roupas de brechós com facilidade, <TextMarkerHightlight
@@ -58,12 +59,14 @@
 	.title {
 		font-size: calc(max(4vw, 36px));
 		text-align: center;
+		z-index: 2;
 	}
 
 	.subtitle {
 		padding: 0px 0px;
 		margin: 14px 0px;
 		text-align: center;
+		z-index: 2;
 	}
 
 	.top {
@@ -73,7 +76,7 @@
 		width: 100%;
 		object-fit: cover;
 		position: absolute;
-		z-index: -1;
+		z-index: 1;
 		filter: blur(2px);
 	}
 
@@ -94,8 +97,11 @@
 		overflow: hidden;
 		position: relative;
 		background-color: #333;
-		z-index: -2;
 		padding: 0px;
+	}
+
+	.lifted {
+		z-index: 10;
 	}
 
 	section {

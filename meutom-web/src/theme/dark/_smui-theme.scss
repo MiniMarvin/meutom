@@ -1,69 +1,182 @@
-@use 'sass:color';
-
-@use '@material/theme/color-palette';
-
 // Svelte Colors! (Dark Theme)
+// Generated from https://m3.material.io/theme-builder
+// We are configuring the Material 2 theme, which accepts a smaller set of variables.
 @use '@material/theme/index' as theme with (
-  $primary: rgb(255 176 209),
-  $surface-tint: rgb(255 176 209),
-  $on-primary: rgb(83 29 56),
-  $primary-container: rgb(110 51 79),
-  $on-primary-container: rgb(255 216 230),
-  $secondary: rgb(225 189 202),
-  $on-secondary: rgb(65 42 51),
-  $secondary-container: rgb(89 63 74),
-  $on-secondary-container: rgb(254 217 230),
-  $tertiary: rgb(241 187 152),
-  $on-tertiary: rgb(73 40 15),
-  $tertiary-container: rgb(99 62 35),
-  $on-tertiary-container: rgb(255 220 198),
-  $error: rgb(255 180 171),
-  $on-error: rgb(105 0 5),
-  $error-container: rgb(147 0 10),
-  $on-error-container: rgb(255 218 214),
-  $background: rgb(25 17 20),
-  $on-background: rgb(238 223 226),
-  $surface: rgb(25 17 20),
-  $on-surface: rgb(238 223 226),
-  $surface-variant: rgb(80 67 72),
-  $on-surface-variant: rgb(212 194 199),
-  $outline: rgb(157 140 146),
-  $outline-variant: rgb(80 67 72),
-  $shadow: rgb(0 0 0),
-  $scrim: rgb(0 0 0),
-  $inverse-surface: rgb(238 223 226),
-  $inverse-on-surface: rgb(55 46 49),
-  $inverse-primary: rgb(137 74 103),
-  $primary-fixed: rgb(255 216 230),
-  $on-primary-fixed: rgb(57 7 35),
-  $primary-fixed-dim: rgb(255 176 209),
-  $on-primary-fixed-variant: rgb(110 51 79),
-  $secondary-fixed: rgb(254 217 230),
-  $on-secondary-fixed: rgb(42 21 30),
-  $secondary-fixed-dim: rgb(225 189 202),
-  $on-secondary-fixed-variant: rgb(89 63 74),
-  $tertiary-fixed: rgb(255 220 198),
-  $on-tertiary-fixed: rgb(48 20 1),
-  $tertiary-fixed-dim: rgb(241 187 152),
-  $on-tertiary-fixed-variant: rgb(99 62 35),
-  $surface-dim: rgb(25 17 20),
-  $surface-bright: rgb(64 55 58),
-  $surface-container-lowest: rgb(19 12 15),
-  $surface-container-low: rgb(33 25 28),
-  $surface-container: rgb(37 29 32),
-  $surface-container-high: rgb(48 40 43),
-  $surface-container-highest: rgb(59 50 53)
+  $primary: #d6b2ef,
+  $on-primary: rgb(0, 0, 0),
+  $secondary: #1e5c4c,
+  $on-secondary: rgb(255, 255, 255),
+  $error: #b00020,
+  $on-error: rgb(255, 255, 255),
+  $background: #333333,
+  $surface: #333333,
+  $on-surface: #f8f8e7
 );
+
+// Defining shape and typography based on Material documentation.
+@use '@material/shape/index' as shape with (
+  $small-component-radius: 8px,
+  $medium-component-radius: 12px,
+  $large-component-radius: 24px
+);
+
+@use '@material/typography/index' as typography with (
+  $font-family: 'Quicksand',
+  $styles-headline1: (
+    font-size: 6rem,
+    line-height: 6rem,
+    font-weight: 300,
+    letter-spacing: -0.015625em,
+    text-decoration: inherit,
+    text-transform: inherit,
+  ),
+  $styles-headline2: (
+    font-size: 3.75rem,
+    line-height: 3.75rem,
+    font-weight: 300,
+    letter-spacing: -0.0083333333em,
+    text-decoration: inherit,
+    text-transform: inherit,
+  ),
+  $styles-body1: (
+    font-size: 1rem,
+    line-height: 1.5rem,
+    font-weight: 400,
+    letter-spacing: 0.03125em,
+    text-decoration: inherit,
+    text-transform: inherit,
+  )
+);
+
+@use 'sass:color';
+@use '@material/theme/color-palette';
+@use 'sass:math';
+
+// -------------------------------------------------------------------
+// 1. SHAPE CONFIGURATION (Crucial for the Image Look)
+// -------------------------------------------------------------------
+
+// The image uses "Pill" shapes for almost everything.
+// 999px ensures the ends are always perfectly round regardless of height.
+$pill-shape: 999px;
+$card-radius: 24px; // For the larger containers/surfaces
+
+// -------------------------------------------------------------------
+// 2. COMPONENT CONFIGURATION
+// -------------------------------------------------------------------
+
+// BUTTONS
+// The image shows buttons are fully rounded (Primary and Secondary)
+
+@use '@material/button/mixins' as mdc-button;
+@use '@material/fab/mixins' as mdc-fab;
+// @use '@material/chips/mixins' as mdc-chips;
+@use '@material/card/mixins' as mdc-card;
+
+.pill-button {
+  @include mdc-button.shape-radius(100%);
+  @include mdc-button.height(48px);
+}
+
+.pill-fab {
+  @include mdc-fab.shape-radius(50%);
+}
+
+// .pill-chips {
+//   @include mdc-chips.shape-radius(100%);
+//   @include mdc-chips.height(32px);
+// }
+
+.pill-card {
+  @include mdc-card.shape-radius($card-radius);
+}
+// -------------------------------------------------------------------
+// 3. SWITCH (TOGGLE) CUSTOMIZATION
+// -------------------------------------------------------------------
+// The switches in your image are "iOS style" (thick track, thumb inside).
+// Standard Material switches are thin tracks. We need aggressive overrides here.
+
+// @use '@material/switch' with (
+//   // To get the "chunky" look, the track must be solid, not transparent.
+//   // Standard Material defaults to ~0.5 opacity.
+//   $selected-track-opacity: 1,
+//   $unselected-track-opacity: 1
+// );
+// -------------------------------------------------------------------
+// 5. CSS OVERRIDES (For shapes variables can't reach)
+// -------------------------------------------------------------------
+
+// Customizing the Switch to match the "Chunky" look in the image
+.mdc-switch {
+  // Make the switch larger
+  --mdc-switch-track-height: 32px;
+  --mdc-switch-track-width: 52px;
+  
+  // Custom Thumb positioning to fit inside the thick track
+  .mdc-switch__track {
+    height: 32px;
+    width: 52px;
+    border-radius: 999px; // Fully rounded track
+    opacity: 1; // Make track solid (Material usually makes it transparent)
+  }
+
+  .mdc-switch__handle-track {
+    width: 52px; // Match track width
+  }
+
+  .mdc-switch__handle {
+    // Center the thumb vertically
+    top: 4px; 
+    left: 4px;
+    width: 24px;
+    height: 24px;
+  }
+  
+  // When checked, move the thumb to the right
+  &.mdc-switch--selected .mdc-switch__handle {
+    transform: translateX(20px) !important; // Adjust based on width
+  }
+}
+
+// Navigation Bar Active Indicator Shape
+// The image shows a rounded rectangle for the active nav item
+.smui-bottom-navigation__button--active .smui-bottom-navigation__button__icon {
+    background-color: rgba(255, 255, 255, 0.1); // Use your surface color var here
+    border-radius: 16px;
+    padding: 4px 16px;
+    width: auto;
+}
+
 
 html,
 body {
-  background-color: #000;
+  font-family: 'Quicksand', sans-serif;
+  background-color: theme.$background;
   color: theme.$on-surface;
 }
 
+p,h1,h2,h3,h4,h5,h6,span {
+  font-family: 'Quicksand', sans-serif;
+}
+
 a {
-  color: #40b3ff;
+  color: theme.$primary;
 }
 a:visited {
-  color: color.scale(#40b3ff, $lightness: -35%);
+  color: color.scale(theme.$primary, $lightness: -35%);
+}
+
+/* Mobile */
+* {
+  font-family: sans-serif;
+  box-sizing: border-box;
+  line-height: 150%;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0px;
+  scrollbar-width: thin;
 }
