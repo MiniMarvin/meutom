@@ -13,6 +13,13 @@ export default defineConfig({
 			allow: [process.cwd()]
 		}
 	},
+	build: {
+		rollupOptions: {
+			output: {
+				format: 'es' // Ajusta o formato para ES Modules, compatível com code-splitting
+			}
+		}
+	},
 	plugins: [
 		enhancedImages(),
 		sveltekit(),
