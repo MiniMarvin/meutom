@@ -3,6 +3,7 @@
 	import Card, { Content } from '@smui/card';
 	import Button from '@smui/button';
 	import Carousel from 'svelte-carousel';
+	// import 'svelte-carousel/dist/svelte-carousel.css'; // Certifique-se de importar o CSS do carrossel
 	import Hero from '$lib/assets/hero.png?enhanced';
 	import Blog1 from '$lib/assets/blog 1.png?enhanced';
 	import Blog2 from '$lib/assets/blog 2.png?enhanced';
@@ -12,8 +13,6 @@
 	import TryOut3 from '$lib/assets/try out 3.png?enhanced';
 
 	let carousel;
-
-	console.log(Hero);
 
 	const carouselItems = [
 		{
@@ -27,6 +26,29 @@
 		{
 			src: TryOut3,
 			alt: 'Thrifting'
+		}
+	];
+
+	const blogPosts = [
+		{
+			title: 'Dicas de moda sustentável para o dia a dia',
+			description:
+				'Pequenas mudanças que fazem uma grande diferença para o planeta e para o seu estilo.',
+			link: '/blog/dicas-moda-sustentavel',
+			image: Blog1
+		},
+		{
+			title: 'Como montar um guarda-roupa cápsula',
+			description:
+				'Menos peças, mais looks. Aprenda a montar um guarda-roupa versátil e funcional.',
+			link: '/blog/guarda-roupa-capsula',
+			image: Blog2
+		},
+		{
+			title: 'A história da moda circular em BH',
+			description: 'Conheça os brechós e iniciativas que estão transformando a cena da moda em BH.',
+			link: '/blog/moda-circular-bh',
+			image: Blog3
 		}
 	];
 </script>
@@ -43,11 +65,15 @@
 	<!-- Hero Section -->
 	<section class="hero" style={`background-image: url('${Hero.img.src}');`}>
 		<div class="hero-content">
-			<h1>Seu guarda-roupa, reinventado.</h1>
-			<p>
-				Com Meu Tom, você digitaliza suas peças, cria looks incríveis e entra no mundo da moda
-				circular.
-			</p>
+			<div class="hero-entry">
+				<h1>Seu guarda-roupa, reinventado</h1>
+			</div>
+			<div class="hero-entry">
+				<p>
+					Com Meu Tom, você digitaliza suas peças, cria looks incríveis e entra no mundo da moda
+					circular.
+				</p>
+			</div>
 			<Button
 				href="https://docs.google.com/forms/d/e/1FAIpQLSdx_IFhlR53VD7CuQXo79_X3v2HnO4Q_Z-NWt7YlOamVW6WQA/viewform?usp=dialog"
 				variant="raised"
@@ -68,12 +94,12 @@
 			<div class="step">
 				<div class="step-icon">2</div>
 				<h3>Crie looks</h3>
-				<p>Combine suas peças e crie looks para qualquer ocasião.</p>
+				<p>Combine suas peças e crie looks para qualquer ocasião</p>
 			</div>
 			<div class="step">
 				<div class="step-icon">3</div>
 				<h3>Conecte-se</h3>
-				<p>Contrate stylists, troque peças e faça parte da comunidade.</p>
+				<p>Contrate stylists, troque peças e faça parte da comunidade</p>
 			</div>
 		</div>
 	</section>
@@ -86,7 +112,7 @@
 				<Content>
 					<div class="card-icon">📱</div>
 					<h3>Guarda-roupa Digital</h3>
-					<p>Tenha seu guarda-roupa na palma da sua mão. Acesse suas peças de qualquer lugar.</p>
+					<p>Tenha seu guarda-roupa na palma da sua mão. Acesse suas peças de qualquer lugar</p>
 				</Content>
 			</Card>
 			<Card class="feature-card">
@@ -113,7 +139,7 @@
 				<Content>
 					<div class="card-icon">📅</div>
 					<h3>Crie Coleções</h3>
-					<p>Organize seus looks em coleções e planeje o que vestir na semana.</p>
+					<p>Organize seus looks em coleções e planeje o que vestir na semana</p>
 				</Content>
 			</Card>
 		</div>
@@ -124,7 +150,7 @@
 		<h2>Experimente</h2>
 		<div class="carousel-wrapper">
 			{#if browser}
-				<Carousel {carouselItems} bind:this={carousel}>
+				<Carousel bind:this={carousel} itemsToShow={1} autoplay={true} autoplaySpeed={3000}>
 					{#each carouselItems as item}
 						<div class="carousel-item">
 							<enhanced:img
@@ -143,43 +169,25 @@
 	<section class="blog">
 		<h2>Fique por dentro</h2>
 		<div class="blog-posts">
-			<div class="post-card">
-				<enhanced:img
-					src={Blog1}
-					alt="Dicas de moda sustentável"
-					sizes="(min-width:1920px) 1280px, (min-width:1080px) 640px, (min-width:768px) 400px"
-				/>
-				<h3>Dicas de moda sustentável para o dia a dia</h3>
-				<p>Pequenas mudanças que fazem uma grande diferença para o planeta e para o seu estilo.</p>
-				<a href="/blog/dicas-moda-sustentavel">Leia mais</a>
-			</div>
-			<div class="post-card">
-				<enhanced:img
-					src={Blog2}
-					alt="Guarda-roupa cápsula"
-					sizes="(min-width:1920px) 1280px, (min-width:1080px) 640px, (min-width:768px) 400px"
-				/>
-				<h3>Como montar um guarda-roupa cápsula</h3>
-				<p>Menos peças, mais looks. Aprenda a montar um guarda-roupa versátil e funcional.</p>
-				<a href="/blog/guarda-roupa-capsula">Leia mais</a>
-			</div>
-			<div class="post-card">
-				<enhanced:img
-					src={Blog3}
-					alt="Moda circular em BH"
-					sizes="(min-width:1920px) 1280px, (min-width:1080px) 640px, (min-width:768px) 400px"
-				/>
-				<h3>A história da moda circular em BH</h3>
-				<p>Conheça os brechós e iniciativas que estão transformando a cena da moda em BH.</p>
-				<a href="/blog/moda-circular-bh">Leia mais</a>
-			</div>
+			{#each blogPosts as post}
+				<div class="post-card">
+					<enhanced:img
+						src={post.image}
+						alt={post.title}
+						sizes="(min-width:1920px) 1280px, (min-width:1080px) 640px, (min-width:768px) 400px"
+					/>
+					<h3>{post.title}</h3>
+					<p>{post.description}</p>
+					<a href={post.link}>Leia mais</a>
+				</div>
+			{/each}
 		</div>
 	</section>
 
 	<!-- Footer -->
 	<footer class="footer">
 		<div class="footer-content">
-			<p>&copy; 2025 Meu Tom. Todos os direitos reservados.</p>
+			<p>&copy; 2025 Meu Tom. Todos os direitos reservados</p>
 			<div class="social-links">
 				<a href="https://www.instagram.com/meutom.app" target="_blank">Instagram</a>
 				<a href="https://www.instagram.com/meutom.app" target="_blank">TikTok</a>
@@ -212,31 +220,30 @@
 		/* background-image: url('{Hero.src}'); */
 		background-size: cover;
 		background-position: center;
-		color: var(--text-dark);
+		color: var(--text-dark); /* Cor padrão para texto */
 		padding: 8rem 2rem;
 		min-height: 400px;
 		border-radius: 24px;
-		display: flex; /* Make hero a flex container */
-		align-items: center; /* Vertically center content */
-		justify-content: flex-start; /* Align content to the start (left) */
+		display: flex;
+		align-items: center;
+		justify-content: flex-start;
 		width: 100%;
 	}
 
 	.hero-content {
 		max-width: 800px;
 		margin: 0 auto;
-		text-align: left; /* Align text left for hero content */
-		/* Define text highlight variables here, scoped to .hero-content */
-		--hero-highlight-r: 249; /* R of #f9f8f2 (light background in light mode) */
-		--hero-highlight-g: 248; /* G of #f9f8f2 */
-		--hero-highlight-b: 242; /* B of #f9f8f2 */
+		text-align: left;
 		width: 100%;
+		color: var(--text-dark); /* Garante que o texto mantenha a cor no modo claro */
+		padding: 1.5rem; /* Adiciona espaçamento interno */
+		border-radius: 8px; /* Bordas arredondadas para o fundo */
 	}
 
-	html[data-theme='dark'] .hero-content {
-		--hero-highlight-r: 51; /* R of #333333 (dark background in dark mode) */
-		--hero-highlight-g: 51; /* G of #333333 */
-		--hero-highlight-b: 51; /* B of #333333 */
+	@media (prefers-color-scheme: dark) {
+		.hero-content {
+			color: var(--text-light); /* Ajusta a cor do texto para o modo escuro */
+		}
 	}
 
 	@media (min-width: 801px) {
@@ -244,6 +251,16 @@
 			margin-left: 0; /* Align to the left on desktop */
 			margin-right: auto;
 		}
+	}
+
+	.hero-entry {
+		background-color: rgba(
+			248,
+			248,
+			231,
+			0.8
+		); /* Fundo escuro com opacidade de 80% no modo escuro */
+		border-radius: 1em;
 	}
 
 	.hero h1 {
@@ -266,7 +283,6 @@
 				var(--hero-highlight-b),
 				0.7
 			);
-			padding: 0.2em 0.5em;
 			border-radius: 0.2em;
 			display: inline-block; /* To make padding work */
 			line-height: 1.3; /* Adjust line height for better appearance with background */
@@ -332,6 +348,7 @@
 		max-width: 800px;
 		margin: 3rem auto 0;
 	}
+
 	img {
 		height: auto;
 	}
